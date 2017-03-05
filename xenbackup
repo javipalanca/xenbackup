@@ -59,14 +59,14 @@ def create_session(url, username, password):
 	try:
 		session = XenAPI.Session(url)
 		session.xenapi.login_with_password(username, password)
-	except Exception, e:
+	except Exception as e:
 		if hasattr(e, 'details') and e.details[0] == 'HOST_IS_SLAVE':
 			# Redirect to cluster master
 			url = urlparse(url).scheme + '://' + e.details[1]
 			try:
 				session = XenAPI.Session(url)
 				session.login_with_password(username, password)
-			except Exception, e:
+			except Exception as e:
 				handle_login_error(e)
 		else:
 			handle_login_error(e)
@@ -140,14 +140,14 @@ def find_backup(uuid_or_file, repository, inventory):
 		
 		
 def print_vm_backups(uuid, vm):
-	print 'VM: ' + uuid
-	print '\tName:' + vm.get('name_label','Unknown')
-	print '\tState: ' + vm.get('power_state', 'Only Backup')
-	print '\tBackups:'
+	print('VM: ' + uuid)
+	print('\tName:' + vm.get('name_label','Unknown'))
+	print('\tState: ' + vm.get('power_state', 'Only Backup'))
+	print('\tBackups:')
 	if not vm['_backups']:
-		print '\t\t-none-'
+		print('\t\t-none-')
 	for backup in vm['_backups']:
-		print '\t\t' + backup[0] + '\t' + ago.human(backup[2])
+		print('\t\t' + backup[0] + '\t' + ago.human(backup[2]))
 
 
 ## commands	
@@ -162,7 +162,7 @@ def list(args):
 		try:
 			print_vm_backups(args.uuid, inventory[args.uuid])
 		except:
-			print 'VM with UUID "' + args.uuid + '" not found.'
+			print('VM with UUID "' + args.uuid + '" not found.')
 	else:
 		for uuid, vm in sorted(inventory.items()):
 			print_vm_backups(uuid, vm)
@@ -190,7 +190,7 @@ def backup(args):
 				if 'other_config' in record and 'XenCenter.CustomFields.backup' in record['other_config']:
 					do_backup = record['other_config']['XenCenter.CustomFields.backup']
 				if not do_backup:
-					print "skipping backup of %s" % (record['name_label'])
+					print("skipping backup of {}".format(record['name_label']))
 					continue
 				
 			log.info("Backup for %s:%s started", record['name_label'], vm)
@@ -213,7 +213,7 @@ def backup(args):
 			download(url, file)
 
 			log.info("Backup for %s:%s finished", record['name_label'], vm)
-		except Exception, e:
+		except Exception as e:
 			log.error("Backup for %s failed: %s", vm, e)
 			# try to clean up a potentially incomplete backup
 			try:
@@ -253,7 +253,7 @@ def restore(args):
 	inventory = generate_inventory(vms, args.repository)
 	file = find_backup(args.uuid_or_file, args.repository, inventory)
 	if not file:
-		print 'Could not find backup'
+		print('Could not find backup')
 		return
 	
 	log.debug("Importing %s", file)
@@ -265,7 +265,7 @@ def restore(args):
 		try:
 			response = requests.put(url, data=f, verify=False, stream=True)
 			response.raise_for_status()
-		except Exception, e:
+		except Exception as e:
 			log.error("Restore failed: %s", e)
 			return
 
@@ -302,7 +302,7 @@ def read_config():
 		config = json.load(open('/etc/xenbackup.json'))
 	except IOError:
 		config = {}
-	except Exception, e:
+	except Exception as e:
 		log.error(str(e))
 		config = {}
 	return config
